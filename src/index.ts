@@ -20,6 +20,18 @@ class Codec<A, X = A> {
     return this.repr;
   }
 
+  toObject(entity: X): any {
+    return this.serde.encode(entity);
+  }
+
+  toJSON(entity: X): string {
+    return JSON.stringify(this.toObject(entity));
+  }
+
+  fromJSON(json: string): Result<A> {
+    return this.serde.decode(JSON.parse(json));
+  }
+
   sel<Y>(extract: (big: Y) => X): Codec<A, Y> {
     const { encode, decode } = this.serde;
     return new Codec({
