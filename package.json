@@ -1,5 +1,5 @@
 {
-  "name": "codec",
+  "name": "codec-ts",
   "version": "0.1.0",
   "description": "Composable bi-directional serialization",
   "main": "dist/index.js",

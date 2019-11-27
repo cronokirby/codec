@@ -7,7 +7,7 @@ When you create a new codec, you're specifying how to read a file from JSON, and
 
 ```ts
 // This is useful since quite a few definitions overlap with basic types
-import * as C from 'codec';
+import * as C from 'codec-ts';
 
 // 1
 C.number.toObject(1);
