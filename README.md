@@ -2,3 +2,43 @@
 
 Codec is a library that lets you write bi-directional encodings for types in a composable way.
 When you create a new codec, you're specifying how to read a file from JSON, and how to serialize it at the same time!
+
+## Usage
+
+```ts
+// This is useful since quite a few definitions overlap with basic types
+import * as C from 'codec';
+
+// 1
+C.number.toObject(1);
+// '1'
+C.number.toJSON(1);
+// { ok: true, value: 1 }
+C.number.fromJSON('1');
+
+class Int {
+  static codec: C.Codec<Int> = C.map(
+    C.number.sel(x => x.num),
+    n => new Int(n),
+  );
+
+  constructor(public readonly num: number) {}
+}
+
+interface U {
+  name: string;
+  age: Int;
+}
+
+const uCodec: C.Codec<U> = C.record({ name: C.string, age: Int.codec });
+
+
+class User {
+  static codec: C.Codec<User> = C.mapRecord(
+    { name: C.string.sel(u => u.name), age: C.number.sel(u => u.age) },
+    ({ name, age }) => new User(name, age),
+  );
+
+  constructor(public readonly name: string, public readonly age: number) {}
+}
+```
