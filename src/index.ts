@@ -1,4 +1,4 @@
-type Result<A> = { ok: false; error: string } | { ok: true; value: A };
+export type Result<A> = { ok: false; error: string } | { ok: true; value: A };
 
 function mapResult<A, B>(res: Result<A>, f: (a: A) => B): Result<B> {
   if (res.ok) {
@@ -13,7 +13,7 @@ export interface SerDe<X, A> {
   decode(data: any): Result<A>;
 }
 
-class Codec<A, X = A> {
+export class Codec<A, X = A> {
   constructor(private readonly repr: SerDe<X, A>) {}
 
   get serde(): SerDe<X, A> {
@@ -36,14 +36,6 @@ class Codec<A, X = A> {
     const { encode, decode } = this.serde;
     return new Codec({
       encode: y => encode(extract(y)),
-      decode,
-    });
-  }
-
-  field(name: string): Codec<A, X> {
-    const { encode, decode } = this.serde;
-    return new Codec({
-      encode: y => ({ [name]: encode(y) }),
       decode,
     });
   }
@@ -106,12 +98,23 @@ function decodeRecord<X, B, R>(
   return { ok: true, value: res };
 }
 
-export function record<R, X = R>(
+function sameRecord<R, X>(
   codecs: { [K in keyof R]: Codec<R[K], X> },
 ): Codec<R, X> {
   return new Codec({
     encode: x => encodeRecord(x, codecs),
     decode: data => decodeRecord(data, codecs),
+  });
+}
+
+export function record<R>(codecs: { [K in keyof R]: Codec<R[K], R[K]> }): Codec<R> {
+  const enlarged: { [K in keyof R]: Codec<R[K], R> } = {} as any;
+  for (const key in codecs) {
+    enlarged[key] = codecs[key].sel(r => r[key]);
+  }
+  return new Codec({
+    encode: x => encodeRecord(x, enlarged),
+    decode: data => decodeRecord(data, enlarged),
   });
 }
 
@@ -127,5 +130,5 @@ export function mapRecord<R, B, X>(
   codecs: { [K in keyof R]: Codec<R[K], X> },
   f: (args: R) => B,
 ): Codec<B, X> {
-  return map(record(codecs), f);
+  return map(sameRecord(codecs), f);
 }
