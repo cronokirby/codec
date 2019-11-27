@@ -58,3 +58,10 @@ test('mapRecord works as expected', () => {
   expect(User.codec.toJSON(john)).toEqual(json);
   expect(User.codec.fromJSON(json)).toEqual({ ok: true, value: john });
 });
+
+test('array codecs work', () => {
+  const codec = C.array(C.number);
+  expect(codec.toObject([1, 2, 3])).toEqual([1, 2, 3]);
+  expect(codec.toJSON([1, 2, 3])).toBe('[1,2,3]');
+  expect(codec.fromJSON('[1,2,3]')).toEqual({ ok: true, value: [1, 2, 3] });
+});

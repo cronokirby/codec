@@ -176,6 +176,33 @@ export const boolean: Codec<boolean> = new Codec({
       : { ok: false, error: 'expected boolean' },
 });
 
+function decodeArray<A, X>(data: any, codec: Codec<A, X>): Result<Array<A>> {
+  if (!Array.isArray(data)) {
+    return { ok: false, error: 'expected array' };
+  }
+  const value = [];
+  for (const x of data) {
+    const decoded = codec.serde.decode(x);
+    if (!decoded.ok) {
+      return decoded;
+    }
+    value.push(decoded.value);
+  }
+  return { ok: true, value };
+}
+
+/**
+ * Create a Codec that encodes and decodes arrays.
+ *
+ * @param codec the base codec to extend to arrays.
+ */
+export function array<A, X>(codec: Codec<A, X>): Codec<Array<A>, Array<X>> {
+  return new Codec({
+    encode: xs => xs.map(x => codec.serde.encode(x)),
+    decode: data => decodeArray(data, codec),
+  });
+}
+
 function encodeRecord<X, R>(
   x: X,
   codecs: { [K in keyof R]: Codec<R[K], X> },
