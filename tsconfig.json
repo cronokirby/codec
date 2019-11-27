@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    // The target we specify doesn't need to be very precise, but we want decent
+    // compatibility across different versions of Node; hence the older target.
+    "target": "es5",
+    "module": "commonjs",
+    // We might as well use the latest and greatest browser library
+    "lib": ["es2018"],
+    "declaration": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "types": ["jest"],
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "downlevelIteration": true
+  }
+}

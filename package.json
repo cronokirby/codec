@@ -1,0 +1,26 @@
+{
+  "name": "codec",
+  "version": "0.1.0",
+  "description": "Composable bi-directional serialization",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cronokirby/codec.git"
+  },
+  "author": "Lúcás Meier",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cronokirby/codec/issues"
+  },
+  "homepage": "https://github.com/cronokirby/codec#readme",
+  "devDependencies": {
+    "jest": "^24.9.0",
+    "prettier": "^1.19.1",
+    "tslint": "^5.20.1",
+    "typescript": "^3.7.2"
+  }
+}

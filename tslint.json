@@ -1,0 +1,16 @@
+{
+  "defaultSeverity": "error",
+  "extends": ["tslint:recommended"],
+  "jsRules": {},
+  "rules": {
+    "arrow-parens": false,
+    "no-console": false,
+    "max-classes-per-file": false,
+    "member-access": false,
+    "object-literal-key-quotes": [true, "as-needed"],
+    "object-literal-sort-keys": false,
+    "quotemark": [true, "single"],
+    "interface-name": [true, "never-prefix"]
+  },
+  "rulesDirectory": []
+}
