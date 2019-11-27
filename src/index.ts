@@ -141,6 +141,55 @@ export class Codec<A, X = A> {
       decode,
     });
   }
+
+  /**
+   * Filter out only decoded values satisfying some condition.
+   *
+   * This is useful to have additional constraints on values besides basic shape.
+   *
+   * @param error the error message to show if the condition fails
+   * @param cond the condition to check after decoding
+   */
+  filter(error: string, cond: (a: A) => boolean): Codec<A, X> {
+    const { encode, decode } = this.serde;
+    return new Codec({
+      encode,
+      decode: data => {
+        const decoded = decode(data);
+        if (!decoded.ok) {
+          return decoded;
+        }
+        if (!cond(decoded.value)) {
+          return { ok: false, error };
+        }
+        return decoded;
+      },
+    });
+  }
+
+  /**
+   * Modify the produced type of a Codec with a function.
+   *
+   * This works by eventually changing the result of our decoding.
+   *
+   * ## Example
+   * ```ts
+   * class Int {
+   *  constructor(public num: number) {}
+   *
+   *  static codec: C.Codec<Int> = C.number.sel(i => i.num).map(n => new Int(n));
+   * }
+   * ```
+   *
+   * @param f the function to apply to the decoded entity
+   */
+  map<B>(f: (a: A) => B): Codec<B, X> {
+    const { encode, decode } = this.serde;
+    return new Codec({
+      encode,
+      decode: data => mapResult(decode(data), f),
+    });
+  }
 }
 
 /**
@@ -176,7 +225,7 @@ export const boolean: Codec<boolean> = new Codec({
       : { ok: false, error: 'expected boolean' },
 });
 
-function decodeArray<A, X>(data: any, codec: Codec<A, X>): Result<Array<A>> {
+function decodeArray<A, X>(data: any, codec: Codec<A, X>): Result<A[]> {
   if (!Array.isArray(data)) {
     return { ok: false, error: 'expected array' };
   }
@@ -196,7 +245,7 @@ function decodeArray<A, X>(data: any, codec: Codec<A, X>): Result<Array<A>> {
  *
  * @param codec the base codec to extend to arrays.
  */
-export function array<A, X>(codec: Codec<A, X>): Codec<Array<A>, Array<X>> {
+export function array<A, X>(codec: Codec<A, X>): Codec<A[], X[]> {
   return new Codec({
     encode: xs => xs.map(x => codec.serde.encode(x)),
     decode: data => decodeArray(data, codec),
@@ -277,34 +326,6 @@ export function record<R>(
 }
 
 /**
- * Modify the produced type of a Codec with a function.
- *
- * This works by eventually changing the result of our decoding.
- *
- * ## Example
- * ```ts
- * class Int {
- *  constructor(public num: number) {}
- *
- *  static codec: C.Codec<Int> = C.map(
- *    C.number.sel(i => i.num),
- *    n => new Int(n)
- *  );
- * }
- * ```
- *
- * @param codec the codec to modify
- * @param f the function to apply to the decoded entity
- */
-export function map<A, B, X>(codec: Codec<A, X>, f: (a: A) => B): Codec<B, X> {
-  const { encode, decode } = codec.serde;
-  return new Codec({
-    encode,
-    decode: data => mapResult(decode(data), f),
-  });
-}
-
-/**
  * Construct a new Codec by mapping over a structure of records.
  *
  * This is similar to the `record` function.
@@ -328,5 +349,5 @@ export function mapRecord<R, B, X>(
   codecs: { [K in keyof R]: Codec<R[K], X> },
   f: (args: R) => B,
 ): Codec<B, X> {
-  return map(sameRecord(codecs), f);
+  return sameRecord(codecs).map(f);
 }

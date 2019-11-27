@@ -17,10 +17,8 @@ C.number.toJSON(1);
 C.number.fromJSON('1');
 
 class Int {
-  static codec: C.Codec<Int> = C.map(
-    C.number.sel(x => x.num),
-    n => new Int(n),
-  );
+  // map->sel works better for type inference
+  static codec: C.Codec<Int> = C.number.map(n => new Int(n)).sel(x => x.num);
 
   constructor(public readonly num: number) {}
 }

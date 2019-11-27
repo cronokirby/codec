@@ -29,10 +29,7 @@ test('record codecs work', () => {
 });
 
 class Int {
-  static codec: C.Codec<Int> = C.map(
-    C.number.sel(x => x.num),
-    n => new Int(n),
-  );
+  static codec: C.Codec<Int> = C.number.map(n => new Int(n)).sel(x => x.num);
   constructor(public readonly num: number) {}
 }
 
