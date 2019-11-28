@@ -62,3 +62,10 @@ test('array codecs work', () => {
   expect(codec.toJSON([1, 2, 3])).toBe('[1,2,3]');
   expect(codec.fromJSON('[1,2,3]')).toEqual({ ok: true, value: [1, 2, 3] });
 });
+
+test('constant codecs work', () => {
+  const codec = C.constant<'X'>('X');
+  expect(codec.toObject('X')).toEqual('X');
+  const decoded = codec.fromJSON('"Y"');
+  expect(decoded.ok).toBeFalsy();
+});

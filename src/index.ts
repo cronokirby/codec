@@ -252,6 +252,25 @@ export function array<A, X>(codec: Codec<A, X>): Codec<A[], X[]> {
   });
 }
 
+/**
+ * A Codec for constant values.
+ *
+ * This can be useful to decode things like enum tags.
+ *
+ * @param item the constant value we expect
+ */
+export function constant<T>(item: T): Codec<T, T> {
+  return new Codec({
+    encode: t => t,
+    decode: data => {
+      if (data !== item) {
+        return { ok: false, error: `expected ${item}` };
+      }
+      return { ok: true, value: data };
+    },
+  });
+}
+
 function encodeRecord<X, R>(
   x: X,
   codecs: { [K in keyof R]: Codec<R[K], X> },
