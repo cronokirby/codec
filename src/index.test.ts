@@ -69,3 +69,28 @@ test('constant codecs work', () => {
   const decoded = codec.fromJSON('"Y"');
   expect(decoded.ok).toBeFalsy();
 });
+
+type Sum = { type: 'number'; n: number } | { type: 'string'; s: string };
+
+test('oneOf works', () => {
+  const sumNumber = C.record<Sum>({
+    type: C.constant('number'),
+    n: C.number,
+  });
+  const sumString = C.record<Sum>({
+    type: C.constant('string'),
+    s: C.string,
+  });
+  const codec = C.oneOf(
+    [sumNumber, x => x.type === 'number'],
+    [sumString, x => x.type === 'string'],
+  );
+  expect(codec.toJSON({ type: 'number', n: 1 })).toBe(
+    '{"type":"number","n":1}',
+  );
+  expect(codec.toJSON({ type: 'string', s: 's' })).toBe(
+    '{"type":"string","s":"s"}',
+  );
+  expect(codec.fromJSON('{"type":"number","n":1}')).toEqual({ok: true, value: {type: 'number', n: 1 }});
+  expect(codec.fromJSON('{"type":"string","s":"s"}')).toEqual({ok: true, value: {type: 'string', s: 's' }});
+});

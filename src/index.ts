@@ -370,3 +370,42 @@ export function mapRecord<R, B, X>(
 ): Codec<B, X> {
   return sameRecord(codecs).map(f);
 }
+
+/**
+ * Build up a Codec for a sum type.
+ *
+ * Decoding works automatically, by testing each of the codecs in the order passed
+ * to the function.
+ *
+ * For encoding, an extra function is passed, telling us when to encode with a given codec.
+ * At least one of these functions should always be true.
+ *
+ * @param choices the different choices to select from.
+ */
+export function oneOf<A, X = A>(
+  ...choices: Array<[Codec<A, X>, (x: X) => boolean]>
+): Codec<A, X> {
+  return new Codec({
+    encode: x => {
+      for (const [c, f] of choices) {
+        if (f(x)) {
+          return c.serde.encode(x);
+        }
+      }
+      throw new Error('No encoding condition matched');
+    },
+    decode: data => {
+      let decoded: Result<A> = {
+        ok: false,
+        error: 'nothing matches the empty codec',
+      };
+      for (const [c, _] of choices) {
+        decoded = c.serde.decode(data);
+        if (decoded.ok) {
+          return decoded;
+        }
+      }
+      return decoded;
+    },
+  });
+}
