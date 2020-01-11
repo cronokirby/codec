@@ -91,6 +91,36 @@ test('oneOf works', () => {
   expect(codec.toJSON({ type: 'string', s: 's' })).toBe(
     '{"type":"string","s":"s"}',
   );
-  expect(codec.fromJSON('{"type":"number","n":1}')).toEqual({ok: true, value: {type: 'number', n: 1 }});
-  expect(codec.fromJSON('{"type":"string","s":"s"}')).toEqual({ok: true, value: {type: 'string', s: 's' }});
+  expect(codec.fromJSON('{"type":"number","n":1}')).toEqual({
+    ok: true,
+    value: { type: 'number', n: 1 },
+  });
+  expect(codec.fromJSON('{"type":"string","s":"s"}')).toEqual({
+    ok: true,
+    value: { type: 'string', s: 's' },
+  });
+});
+
+interface OptionalUser {
+  name: string;
+  age?: number;
+}
+
+test('optional works', () => {
+  const codec = C.record<OptionalUser>({
+    name: C.string,
+    age: C.number.optional(),
+  });
+  expect(codec.toJSON({ name: 'John', age: 20 })).toBe(
+    '{"name":"John","age":20}',
+  );
+  expect(codec.toJSON({ name: 'John' })).toBe('{"name":"John"}');
+  expect(codec.fromJSON('{"name": "John", "age": 20}')).toEqual({
+    ok: true,
+    value: { name: 'John', age: 20 },
+  });
+  expect(codec.fromJSON('{"name": "John"}')).toEqual({
+    ok: true,
+    value: { name: 'John' },
+  });
 });

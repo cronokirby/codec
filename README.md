@@ -39,4 +39,11 @@ class User {
 
   constructor(public readonly name: string, public readonly age: number) {}
 }
+
+interface OptionalUser {
+  name: string;
+  age?: number;
+}
+
+const optionalCodec = C.record({name: C.string, age: C.number.optional()});
 ```

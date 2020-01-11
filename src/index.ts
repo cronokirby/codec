@@ -190,6 +190,26 @@ export class Codec<A, X = A> {
       decode: data => mapResult(decode(data), f),
     });
   }
+
+  /**
+   * Make a certain codec optional.
+   *
+   * This is useful for optional decoding of certain fields.
+   */
+  optional(): Codec<A | undefined, X | undefined> {
+    const { encode, decode } = this.serde;
+    return new Codec({
+      encode: x => x === undefined ? undefined : encode(x),
+      decode: data => {
+        const decoded = decode(data);
+        let value;
+        if (decoded.ok) {
+          value = decoded.value;
+        }
+        return { ok: true, value };
+      },
+    });
+  }
 }
 
 /**
@@ -292,14 +312,13 @@ function decodeRecord<X, B, R>(
   const res: R = {} as R;
   for (const key in codecs) {
     const val = data[key];
-    if (!val) {
-      return { ok: false, error: `missing field ${key}` };
-    }
     const decode = codecs[key].serde.decode(val);
     if (!decode.ok) {
       return decode;
     }
-    res[key] = decode.value;
+    if (decode.value !== undefined) {
+      res[key] = decode.value;
+    }
   }
   return { ok: true, value: res };
 }
